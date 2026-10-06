@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+
+# Secrets
+.env
+
+# Data and run outputs (never commit raw datasets or LLM outputs)
+data/raw/*
+!data/raw/.gitkeep
+runs/*
+!runs/.gitkeep
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/

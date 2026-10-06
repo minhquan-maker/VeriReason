@@ -1,0 +1,49 @@
+# Primary dataset (proposal §5.1). Requires a Kaggle account and accepting the competition rules:
+#   kaggle competitions download -c home-credit-default-risk -f application_train.csv -p data/raw/home-credit
+# The schema is a DRAFT — see configs/schemas/home_credit.yaml.
+
+run_name: home_credit_pilot
+seed: 13
+
+dataset:
+  name: home_credit
+  path: data/raw/home-credit/application_train.csv
+  test_size: 0.2
+  max_rows: null           # set e.g. 60000 to subsample while iterating
+
+schema: configs/schemas/home_credit.yaml
+
+models:
+  xgb:
+    type: xgboost
+    params: {n_estimators: 500, max_depth: 5, learning_rate: 0.05, subsample: 0.8, colsample_bytree: 0.8}
+  lr:
+    type: logistic
+    params: {C: 0.5}
+
+decision:
+  denial_rate: 0.20
+
+pilot:
+  n_denied: 200
+
+verifier:
+  samplers: [knn, marginal, median, approved]
+  n_samples: 200
+  knn_k: 100
+  reference_max_rows: 20000   # subsample R for the kNN index
+  z: 1.96
+  min_effect: 0.005
+  top_k: 4
+
+generation:
+  backends:
+    - {name: dummy, backend: dummy}
+  setups: [raw, shap, shap_groups]
+  samples_per_applicant: 3
+  temperature: 0.7
+  max_tokens: 1024
+
+extraction:
+  backend: keyword
+  max_tokens: 4096

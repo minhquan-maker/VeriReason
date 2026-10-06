@@ -1,0 +1,116 @@
+# Feature schema and reason groups for Statlog German Credit (UCI).
+# Column order of german.data is fixed by `uci_order` in verireason/data/german.py.
+#
+# Proposal §2.1: features are partitioned into reason groups G = {g1..gK}; interventions replace
+# a whole group (§4.3), and derived features (h) are recomputed after every replacement.
+# Rule enforced by the loader: every source of a derived feature must sit in ONE group, and the
+# derived feature belongs to that group. This keeps the logistic-regression analytic reference
+# (§4.6) exact.
+
+target: default            # 1 = bad credit risk (UCI label 2), 0 = good
+
+# Excluded from the scoring model (protected / not used by lenders). Claims about them are E1.
+dropped: [personal_status_sex, foreign_worker]
+
+features:
+  checking_status:
+    type: categorical
+    values: {A11: "below 0 DM", A12: "0 to 200 DM", A13: "200 DM or more / salary account", A14: "no checking account"}
+  duration_months: {type: numeric, unit: months}
+  credit_history:
+    type: categorical
+    values:
+      A30: "no credits taken / all paid back duly"
+      A31: "all credits at this bank paid back duly"
+      A32: "existing credits paid back duly till now"
+      A33: "delay in paying off in the past"
+      A34: "critical account / other credits existing elsewhere"
+  purpose:
+    type: categorical
+    values: {A40: "new car", A41: "used car", A42: "furniture/equipment", A43: "radio/television",
+             A44: "domestic appliances", A45: "repairs", A46: "education", A47: "vacation",
+             A48: "retraining", A49: "business", A410: "other"}
+  credit_amount: {type: numeric, unit: DM}
+  savings:
+    type: categorical
+    values: {A61: "below 100 DM", A62: "100 to 500 DM", A63: "500 to 1000 DM", A64: "1000 DM or more",
+             A65: "unknown / no savings account"}
+  employment_since:
+    type: categorical
+    values: {A71: "unemployed", A72: "less than 1 year", A73: "1 to 4 years", A74: "4 to 7 years",
+             A75: "7 years or more"}
+  installment_rate: {type: numeric, unit: "% of disposable income (1-4 scale)"}
+  other_debtors:
+    type: categorical
+    values: {A101: "none", A102: "co-applicant", A103: "guarantor"}
+  residence_since: {type: numeric, unit: years}
+  property:
+    type: categorical
+    values: {A121: "real estate", A122: "building society savings / life insurance",
+             A123: "car or other property", A124: "unknown / no property"}
+  age: {type: numeric, unit: years, immutable: true}
+  other_installment_plans:
+    type: categorical
+    values: {A141: "bank", A142: "stores", A143: "none"}
+  housing:
+    type: categorical
+    values: {A151: "rent", A152: "own", A153: "for free"}
+  existing_credits: {type: numeric, unit: "credits at this bank"}
+  job:
+    type: categorical
+    values: {A171: "unemployed / unskilled non-resident", A172: "unskilled resident",
+             A173: "skilled employee / official", A174: "management / self-employed / highly qualified"}
+  people_liable: {type: numeric, unit: persons}
+  telephone:
+    type: categorical
+    values: {A191: "none", A192: "yes, registered"}
+
+derived:
+  monthly_payment: {op: ratio, num: credit_amount, den: duration_months}
+
+groups:
+  checking_account:
+    label: "Checking account status"
+    features: [checking_status]
+    aliases: [checking account, current account, account balance, bank account]
+  credit_history:
+    label: "Credit history and other obligations"
+    features: [credit_history, other_installment_plans, existing_credits]
+    aliases: [credit history, payment history, past delays, existing credits, other installment, repayment record]
+  loan_terms:
+    label: "Loan amount, duration and installment burden"
+    features: [duration_months, credit_amount, installment_rate]
+    aliases: [loan amount, credit amount, duration, loan term, installment, monthly payment, repayment period]
+  loan_purpose:
+    label: "Purpose of the loan"
+    features: [purpose]
+    aliases: [purpose, used for, new car, education, business]
+  savings:
+    label: "Savings"
+    features: [savings]
+    aliases: [savings, savings account, reserves]
+  property_and_housing:
+    label: "Property, housing and residence"
+    features: [property, housing, residence_since]
+    aliases: [property, real estate, housing, rent, own home, residence]
+  employment:
+    label: "Employment history and job"
+    features: [employment_since, job]
+    aliases: [employment, employed, job, occupation, work history]
+  guarantors:
+    label: "Co-applicants or guarantors"
+    features: [other_debtors]
+    aliases: [guarantor, co-applicant, co-signer]
+  dependents:
+    label: "Number of dependents"
+    features: [people_liable]
+    aliases: [dependents, people liable, maintenance]
+  telephone:
+    label: "Registered telephone"
+    features: [telephone]
+    aliases: [telephone, phone]
+  age:
+    label: "Age"
+    features: [age]
+    immutable: true
+    aliases: [age, years old, young, older]
