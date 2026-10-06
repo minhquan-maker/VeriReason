@@ -1,0 +1,43 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "verireason"
+version = "0.1.0"
+description = "Intervention-based claim verification and repair for LLM-generated credit denial explanations"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Nguyen Minh Quan" }, { name = "Tran Hai My" }]
+dependencies = [
+    "numpy>=1.26",
+    "pandas>=2.1",
+    "scipy>=1.11",
+    "scikit-learn>=1.4",
+    "xgboost>=2.0",
+    "pydantic>=2.5",
+    "pyyaml>=6.0",
+    "pyarrow>=14",
+    "joblib>=1.3",
+]
+
+[project.optional-dependencies]
+llm = ["anthropic>=0.70", "openai>=1.40", "python-dotenv>=1.0"]
+shap = ["shap>=0.45"]
+dev = ["pytest>=8", "ruff>=0.5"]
+
+[project.scripts]
+verireason = "verireason.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["verireason*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]

@@ -1,0 +1,94 @@
+# DRAFT feature schema for Home Credit Default Risk (application_train.csv only, pilot scope).
+# Open decisions (see README "Open decisions"):
+#   - EXT_SOURCE_1/2/3 dominate the model but are opaque bureau scores; kept as their own group
+#     (`external_scores`, not actionable) so claims about them can be checked, but this choice
+#     must be discussed with the supervisor.
+#   - bureau.csv / previous_application.csv aggregates are not used in the pilot.
+
+target: TARGET
+
+dropped: [CODE_GENDER]
+
+features:
+  NAME_CONTRACT_TYPE: {type: categorical}
+  AMT_INCOME_TOTAL: {type: numeric, unit: currency}
+  AMT_CREDIT: {type: numeric, unit: currency}
+  AMT_ANNUITY: {type: numeric, unit: currency}
+  AMT_GOODS_PRICE: {type: numeric, unit: currency}
+  NAME_INCOME_TYPE: {type: categorical}
+  NAME_EDUCATION_TYPE: {type: categorical}
+  NAME_FAMILY_STATUS: {type: categorical}
+  NAME_HOUSING_TYPE: {type: categorical}
+  CNT_CHILDREN: {type: numeric}
+  CNT_FAM_MEMBERS: {type: numeric}
+  AGE_YEARS: {type: numeric, unit: years, immutable: true}          # from -DAYS_BIRTH / 365.25
+  YEARS_EMPLOYED: {type: numeric, unit: years}                      # from -DAYS_EMPLOYED (365243 -> NaN)
+  OCCUPATION_TYPE: {type: categorical}
+  ORGANIZATION_TYPE: {type: categorical}
+  FLAG_OWN_CAR: {type: categorical}
+  FLAG_OWN_REALTY: {type: categorical}
+  REGION_RATING_CLIENT_W_CITY: {type: numeric}
+  EXT_SOURCE_1: {type: numeric}
+  EXT_SOURCE_2: {type: numeric}
+  EXT_SOURCE_3: {type: numeric}
+  AMT_REQ_CREDIT_BUREAU_MON: {type: numeric}
+  AMT_REQ_CREDIT_BUREAU_QRT: {type: numeric}
+  AMT_REQ_CREDIT_BUREAU_YEAR: {type: numeric}
+  DEF_30_CNT_SOCIAL_CIRCLE: {type: numeric}
+  DEF_60_CNT_SOCIAL_CIRCLE: {type: numeric}
+  YEARS_ID_PUBLISH: {type: numeric, unit: years}                    # from -DAYS_ID_PUBLISH
+  YEARS_LAST_PHONE_CHANGE: {type: numeric, unit: years}             # from -DAYS_LAST_PHONE_CHANGE
+
+derived:
+  CREDIT_INCOME_RATIO: {op: ratio, num: AMT_CREDIT, den: AMT_INCOME_TOTAL}
+  ANNUITY_INCOME_RATIO: {op: ratio, num: AMT_ANNUITY, den: AMT_INCOME_TOTAL}
+  CREDIT_TERM: {op: ratio, num: AMT_ANNUITY, den: AMT_CREDIT}
+  CREDIT_GOODS_RATIO: {op: ratio, num: AMT_CREDIT, den: AMT_GOODS_PRICE}
+
+groups:
+  loan_and_affordability:
+    label: "Loan size, annuity and income (affordability)"
+    features: [AMT_INCOME_TOTAL, AMT_CREDIT, AMT_ANNUITY, AMT_GOODS_PRICE, NAME_CONTRACT_TYPE]
+    aliases: [income, loan amount, annuity, monthly payment, affordability, debt-to-income, credit amount]
+  external_scores:
+    label: "External credit bureau scores"
+    features: [EXT_SOURCE_1, EXT_SOURCE_2, EXT_SOURCE_3]
+    actionable: false
+    aliases: [credit score, external score, bureau score, credit rating]
+  recent_inquiries:
+    label: "Recent credit bureau inquiries"
+    features: [AMT_REQ_CREDIT_BUREAU_MON, AMT_REQ_CREDIT_BUREAU_QRT, AMT_REQ_CREDIT_BUREAU_YEAR]
+    aliases: [inquiries, credit checks, enquiries, applications for credit]
+  employment:
+    label: "Employment and income source"
+    features: [YEARS_EMPLOYED, NAME_INCOME_TYPE, OCCUPATION_TYPE, ORGANIZATION_TYPE]
+    aliases: [employment, job, occupation, employer, income type]
+  education:
+    label: "Education"
+    features: [NAME_EDUCATION_TYPE]
+    aliases: [education, degree]
+  household:
+    label: "Household and family"
+    features: [NAME_FAMILY_STATUS, CNT_CHILDREN, CNT_FAM_MEMBERS]
+    aliases: [family, children, dependents, household, marital]
+  assets_and_housing:
+    label: "Assets and housing"
+    features: [FLAG_OWN_CAR, FLAG_OWN_REALTY, NAME_HOUSING_TYPE]
+    aliases: [car, property, real estate, housing, home]
+  region:
+    label: "Region rating"
+    features: [REGION_RATING_CLIENT_W_CITY]
+    aliases: [region, area, location]
+  social_circle_defaults:
+    label: "Defaults in social circle"
+    features: [DEF_30_CNT_SOCIAL_CIRCLE, DEF_60_CNT_SOCIAL_CIRCLE]
+    aliases: [social circle, contacts]
+  identity_stability:
+    label: "Document and phone stability"
+    features: [YEARS_ID_PUBLISH, YEARS_LAST_PHONE_CHANGE]
+    aliases: [ID document, phone change]
+  age:
+    label: "Age"
+    features: [AGE_YEARS]
+    immutable: true
+    aliases: [age, young, older]
