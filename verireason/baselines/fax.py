@@ -3,7 +3,7 @@
 Central to the go/no-go decision (Gate #2): does general claim verification already catch the
 direction / prominence / omission errors that the intervention verifier finds?
 
-TODO (weeks 1-2, branch `feat/fax-baseline`) — re-read the FAX paper in full before coding:
+TODO (weeks 1-2, branch `baseline/fax-gap-test`) — re-read the FAX paper in full before coding:
   1. Draft explanation -> claims (reuse verireason.extract so both systems see the same claims,
      plus FAX's own decomposition prompt as an ablation).
   2. Cross-check each claim with FAX's "inherently faithful tools" — for tabular data this is

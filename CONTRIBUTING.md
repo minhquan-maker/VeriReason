@@ -5,27 +5,38 @@
 `main` is protected. It must always pass `pytest` and `ruff`, and it changes only through pull
 requests with at least one review from the other student.
 
-Work happens on short-lived branches cut from `main`. Each branch owns one work package from the
-proposal, which keeps diffs small and lets the two of us work in parallel without conflicts. The
-"owner" column is only a suggestion.
+Work happens on short-lived branches. Each branch owns one work package from the proposal, which
+keeps diffs small and lets the two of us work in parallel without conflicts.
 
-| Branch | Scope (modules) | Proposal | Weeks | Suggested owner |
-|---|---|---|---|---|
-| `feat/data-home-credit` | `data/home_credit.py`, `configs/schemas/home_credit.yaml`: finalise reason groups, EXT_SOURCE decision, Kaggle setup | §5.1 | 1 | Quan |
-| `feat/generators` | `generate/`, `llm/`: real backends, prompt freeze, cost / latency logging, ≥ 2 open-weight models + 1 proprietary | §5.2 | 1–2 | My |
-| `feat/fax-baseline` | `baselines/fax.py` (B4) → **Gate #2** | §5.3, §5.7 | 1–2 | My |
-| `feat/verifier` | `verify/`: sensitivity across references, consistency check (Jaccard of Top_k for near-identical applicants), ε calibration, semi-synthetic validation | §4.3–4.6 | 2–5 | Quan |
-| `feat/extractor` | `extract/`: LLM extractor prompt, manual annotation subset, extractor P/R | §4.2 | 3–5 | My |
-| `feat/recourse-e6` | E6 flip test: parse the action into x′, check f(h(x′)) < τ | §2.2 | 4–5 | Quan |
-| `feat/repair` | `repair/` + B5 (RARR-style) + B6 (full regeneration). **Only after the gate passes** | §4.5, §5.3 | 6–8 | both |
-| `feat/llm-judge` | B3 LLM-as-judge (with and without model access) | §5.3 | 6–8 | My |
-| `exp/<name>` | experiment configs, analysis notebooks and figures; no changes to core modules | §5.4–5.6 | 9–11 | both |
-| `paper/<venue>` | LaTeX sources only | — | 12–13 | both |
+Branch names are `<stage>/<slug>`. The stage prefixes follow the paper's pipeline
+(**Generate → Decompose → Verify → Classify → Repair**), plus `data/`, `baseline/`, `exp/` and
+`paper/`, so the branch list reads like the method section. The "owner" column is only a
+suggestion.
+
+| Branch | Stage | Scope (modules) | Proposal | Weeks | Suggested owner |
+|---|---|---|---|---|---|
+| `data/home-credit-reason-groups` | data | `data/home_credit.py`, `configs/schemas/home_credit.yaml`: finalise reason groups, EXT_SOURCE decision, Kaggle setup | §5.1 | 1 | Quan |
+| `generate/llm-narrators` | Generate | `generate/`, `llm/`: real backends, prompt freeze, cost / latency logging, ≥ 2 open-weight models + 1 proprietary | §5.2 | 1–2 | My |
+| `baseline/fax-gap-test` | baseline | `baselines/fax.py`: FAX-style verify-and-filter (B4) → **Gate #2** | §5.3, §5.7 | 1–2 | My |
+| `exp/pilot-go-no-go` | experiment | pilot configs and runs on about 200 denied Home Credit applicants; gate report for the go/no-go meeting | §5.7 | 1–2 | both |
+| `decompose/atomic-claims` | Decompose | `extract/`: LLM extractor prompt, manual annotation subset, extractor P/R | §4.2 | 3–5 | My |
+| `verify/soundness-suite` | Verify | `verify/`: sensitivity across references, ε calibration, consistency check (Jaccard of Top_k for near-identical applicants), semi-synthetic planted-rule validation | §4.3–4.6 | 2–5 | Quan |
+| `classify/recourse-flip-test` | Classify | `label/`: E6 flip test (parse the action into x′, check f(h(x′)) < τ) | §2.2 | 4–5 | Quan |
+| `repair/surgical-edits` | Repair | `repair/`: span-level repair + re-verification loop, B5 (RARR-style), B6 (full regeneration). **Only after the gate passes** | §4.5, §5.3 | 6–8 | both |
+| `baseline/llm-judge` | baseline | B3 LLM-as-judge (with and without model access) | §5.3 | 6–8 | My |
+
+Patterns for later branches: `exp/<topic>` for experiment configs, notebooks and figures with
+no changes to core modules (for example `exp/ablations`, weeks 9–11); `paper/<venue>` for LaTeX
+sources only (for example `paper/finnlp-2027`, weeks 12–13); `fix/<what>` for small fixes.
 
 Rules:
-- Branch from an up-to-date `main`: `git switch main && git pull && git switch -c feat/<name>`.
+- Start new branches from an up-to-date `main`:
+  `git switch main && git pull && git switch -c <stage>/<slug>`.
 - Keep a branch to one work package. Split it if it grows beyond about 500 changed lines.
-- Rebase or merge `main` into your branch before opening a PR, and keep the PR green.
+- Merge `main` into your branch before opening a PR, and keep the PR green. Do not rebase a
+  branch the other person has already pulled.
+- Merge PRs with **Create a merge commit**. Squash and rebase merges rewrite commit ids, which
+  breaks any branch that was cut from the PR branch.
 - Tag every experiment that produces a number reported to the supervisor:
   `git tag pilot-<date>`. Also record the config path and the commit in the run's report.
 
