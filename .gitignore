@@ -23,3 +23,12 @@ runs/*
 
 # Downloaded papers (scripts/fetch_papers.sh)
 papers/
+
+# LaTeX build files (slides/)
+slides/*.aux
+slides/*.log
+slides/*.nav
+slides/*.out
+slides/*.snm
+slides/*.toc
+slides/*.vrb
