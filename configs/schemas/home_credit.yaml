@@ -1,9 +1,15 @@
-# DRAFT feature schema for Home Credit Default Risk (application_train.csv only, pilot scope).
+# DRAFT feature schema for Home Credit Default Risk: application_train.csv plus aggregates from
+# bureau.csv and installments_payments.csv (Weeks 1-2 pilot plan, Step 3). Aggregates are built per
+# applicant in verireason/data/home_credit.py. The application-only variant is
+# home_credit_app_only.yaml.
 # Open decisions (see README "Open decisions"):
 #   - EXT_SOURCE_1/2/3 dominate the model but are opaque bureau scores; kept as their own group
 #     (`external_scores`, not actionable) so claims about them can be checked, but this choice
 #     must be discussed with the supervisor.
-#   - bureau.csv / previous_application.csv aggregates are not used in the pilot.
+#   - The pilot plan excludes age, family status and children from the model so that any LLM
+#     mention is an unambiguous E1. This draft keeps them (age as an immutable group): decide.
+#   - previous_application.csv (group g7) is optional in the pilot and not used.
+#   - Credit-expert review of the group table is still pending.
 
 target: TARGET
 
@@ -38,14 +44,36 @@ features:
   DEF_60_CNT_SOCIAL_CIRCLE: {type: numeric}
   YEARS_ID_PUBLISH: {type: numeric, unit: years}                    # from -DAYS_ID_PUBLISH
   YEARS_LAST_PHONE_CHANGE: {type: numeric, unit: years}             # from -DAYS_LAST_PHONE_CHANGE
+  # instalments_payments.csv aggregates (days late clipped at 0)
+  INST_LATE_RATIO: {type: numeric}
+  INST_DAYS_LATE_MEAN: {type: numeric, unit: days}
+  INST_DAYS_LATE_MAX: {type: numeric, unit: days}
+  HAS_INST_HISTORY: {type: numeric}
+  # bureau.csv aggregates
+  BUREAU_OVERDUE_MAX: {type: numeric, unit: days}
+  BUREAU_OVERDUE_AMT: {type: numeric, unit: currency}
+  BUREAU_DEBT_SUM: {type: numeric, unit: currency}
+  BUREAU_CREDIT_SUM: {type: numeric, unit: currency}
+  BUREAU_ACTIVE_CNT: {type: numeric}
+  HAS_BUREAU_HISTORY: {type: numeric}
 
 derived:
   CREDIT_INCOME_RATIO: {op: ratio, num: AMT_CREDIT, den: AMT_INCOME_TOTAL}
   ANNUITY_INCOME_RATIO: {op: ratio, num: AMT_ANNUITY, den: AMT_INCOME_TOTAL}
   CREDIT_TERM: {op: ratio, num: AMT_ANNUITY, den: AMT_CREDIT}
   CREDIT_GOODS_RATIO: {op: ratio, num: AMT_CREDIT, den: AMT_GOODS_PRICE}
+  BUREAU_UTIL: {op: ratio, num: BUREAU_DEBT_SUM, den: BUREAU_CREDIT_SUM}
 
 groups:
+  payment_history:
+    label: "Payment history (late or missed payments)"
+    features: [INST_LATE_RATIO, INST_DAYS_LATE_MEAN, INST_DAYS_LATE_MAX, HAS_INST_HISTORY,
+               BUREAU_OVERDUE_MAX, BUREAU_OVERDUE_AMT]
+    aliases: [payment history, late payments, missed payments, overdue, delinquency, arrears]
+  outstanding_debt:
+    label: "Outstanding debt and credit utilisation"
+    features: [BUREAU_DEBT_SUM, BUREAU_CREDIT_SUM, BUREAU_ACTIVE_CNT, HAS_BUREAU_HISTORY]
+    aliases: [utilization, utilisation, outstanding debt, existing debt, existing loans, credit limit, active credits]
   loan_and_affordability:
     label: "Loan size, annuity and income (affordability)"
     features: [AMT_INCOME_TOTAL, AMT_CREDIT, AMT_ANNUITY, AMT_GOODS_PRICE, NAME_CONTRACT_TYPE]
