@@ -2,13 +2,14 @@
 # Every stage reads this file; outputs go to runs/<run_name>/.
 
 run_name: german_pilot
-seed: 13
+seed: 2026
 
 dataset:
   name: german
   path: data/raw/german.data
   url: https://archive.ics.uci.edu/ml/machine-learning-databases/statlog/german/german.data
-  test_size: 0.3
+  test_size: 0.15
+  val_size: 0.15            # 70/15/15 train/validation/test; tau is set on validation
 
 schema: configs/schemas/german.yaml
 
@@ -22,19 +23,19 @@ models:
     params: {C: 1.0}
 
 decision:
-  # tau is set so that this share of the held-out split is denied (Home Credit / German Credit have
-  # no real decisions; the denial policy is simulated and must be reported in the paper).
-  denial_rate: 0.30
+  # tau is set on the validation split so that this share of it is denied (neither dataset has real
+  # decisions; the denial policy is simulated and must be reported in the paper).
+  denial_rate: 0.15
 
 pilot:
   n_denied: 200            # capped by the number of denied applicants available
 
 verifier:
   samplers: [knn, marginal, median, approved]   # first one is the primary reference
-  n_samples: 200           # S in proposal §2.1
+  n_samples: 50            # S in proposal §2.1; pilot plan Step 7b uses 50 replacement rows
   knn_k: 50
   z: 1.96                  # CI width used for the MC-SE part of epsilon
-  min_effect: 0.01         # minimum |Delta_g| in probability units — placeholder, fix on a dev split
+  min_effect: 0.005    # epsilon floor; sensitivity {0.002, 0.005, 0.01} (pilot/PREREGISTRATION.md)
   top_k: 4                 # Reg. B commentary: more than four reasons not likely helpful
 
 generation:
@@ -45,7 +46,7 @@ generation:
     # - {name: llama-70b, backend: openai_compat, model: meta-llama/Llama-3.3-70B-Instruct}
   setups: [raw, shap, shap_groups]
   samples_per_applicant: 1
-  temperature: 0.7         # ignored by backends that do not accept sampling parameters
+  temperature: 0          # or the lowest the API allows; ignored by backends that do not accept it
   max_tokens: 1024
 
 extraction:

@@ -61,6 +61,9 @@ class FeatureSchema:
     derived: dict[str, Derived]
     groups: dict[str, Group]
     dropped: list[str] = field(default_factory=list)
+    # prose terms for excluded attributes; a claim that uses one is a factor that is not a model
+    # input (E1). `dropped` names are matched too (underscores read as spaces).
+    sensitive_aliases: list[str] = field(default_factory=list)
 
     # --- loading -------------------------------------------------------------------------
     @classmethod
@@ -88,7 +91,8 @@ class FeatureSchema:
             for n, spec in raw["groups"].items()
         }
         schema = cls(target=raw["target"], features=feats, derived=derived, groups=groups,
-                     dropped=list(raw.get("dropped", [])))
+                     dropped=list(raw.get("dropped", [])),
+                     sensitive_aliases=list(raw.get("sensitive_aliases", [])))
         schema._assign_derived()
         schema.validate()
         return schema

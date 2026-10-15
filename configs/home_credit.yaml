@@ -3,14 +3,15 @@
 # The schema is a DRAFT — see configs/schemas/home_credit.yaml. Application-only variant: home_credit_app_only.yaml.
 
 run_name: home_credit_pilot
-seed: 13
+seed: 2026
 
 dataset:
   name: home_credit
   path: data/raw/home-credit/application_train.csv
   bureau_path: data/raw/home-credit/bureau.csv
   installments_path: data/raw/home-credit/installments_payments.csv
-  test_size: 0.2
+  test_size: 0.15
+  val_size: 0.15            # 70/15/15 train/validation/test; tau is set on validation
   max_rows: null           # set e.g. 60000 to subsample while iterating
 
 schema: configs/schemas/home_credit.yaml
@@ -24,26 +25,26 @@ models:
     params: {C: 0.5}
 
 decision:
-  denial_rate: 0.20
+  denial_rate: 0.15
 
 pilot:
   n_denied: 200
 
 verifier:
   samplers: [knn, marginal, median, approved]
-  n_samples: 200
-  knn_k: 100
+  n_samples: 50            # S in proposal §2.1; pilot plan Step 7b uses 50 replacement rows
+  knn_k: 50
   reference_max_rows: 20000   # subsample R for the kNN index
   z: 1.96
-  min_effect: 0.005
+  min_effect: 0.005    # epsilon floor; sensitivity {0.002, 0.005, 0.01} (pilot/PREREGISTRATION.md)
   top_k: 4
 
 generation:
   backends:
     - {name: dummy, backend: dummy}
   setups: [raw, shap, shap_groups]
-  samples_per_applicant: 3
-  temperature: 0.7
+  samples_per_applicant: 1
+  temperature: 0          # or the lowest the API allows; ignored by backends that do not accept it
   max_tokens: 1024
 
 extraction:

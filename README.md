@@ -39,14 +39,23 @@ Train model → Select denied → Generate → Extract claims → Verify → (Re
 > - consistency check
 > - semi-synthetic validation
 >
-> *Differences from the Weeks 1–2 pilot plan (to settle before 19 Oct):*
+> *Aligned with the Weeks 1–2 pilot plan (15 Oct 2026):*
+> - 70/15/15 split (`dataset.test_size`, `dataset.val_size`), τ set on the validation split for
+>   about 15% denials, seed 2026, kNN K = 50 with S = 50 replacement rows, temperature 0 and one
+>   sample per applicant. All three configs use the same values.
+> - Gender, age, family status, children and family size are excluded from the Home Credit models;
+>   a claim that mentions any of them is E1 (`sensitive_aliases` in the schema). German Credit keeps
+>   `age`, because it is used only as a code check.
+>
+> *Still open before 19 Oct:*
 > - Home Credit now has bureau and instalment aggregates (`payment_history` and
 >   `outstanding_debt` groups, `configs/home_credit.yaml`). It is tested on small fixtures only; the
 >   groups still need expert review and a run on the real files.
-> - Plan: 70/15/15 split, about 15% denials, seed 2026, kNN K = 50, temperature 0 with one sample
->   per applicant. Configs: 80/20 split, 20% denials, seed 13, K = 100, temperature 0.7 with three samples.
-> - Plan excludes age, family status and children from the model. Configs keep age as an immutable group.
-> - `pilot/PREREGISTRATION.md` is a draft. Items marked "to confirm" must be agreed, then it is committed as final on 19 Oct.
+> - Applicant selection is a random draw of `pilot.n_denied`; the plan's stratification by risk
+>   decile and top group, plus 30–40 hard cases, is not implemented yet.
+> - XGBoost has no early stopping (fixed `n_estimators`); the plan suggests early stopping on validation.
+> - `pilot/PREREGISTRATION.md` is final for the thresholds and settings listed there, to be committed
+>   on 19 Oct. Items under "Open at freeze" in that file still need a value.
 > - There is no `pilot/config.yaml`: the pilot is configured by `configs/*.yaml` (`pilot.n_denied`,
 >   `decision`, `verifier`, `generation`). `pilot/` holds only the pre-registration and, later, the report.
 
@@ -65,7 +74,8 @@ python -m venv .venv && source .venv/bin/activate      # Windows: .venv\Scripts\
 pip install -e ".[dev]"            # core + tests
 pip install -e ".[dev,llm]"        # + Claude / OpenAI-compatible clients for real generators
 cp .env.example .env               # then fill in only the keys you use
-pytest -q                          # 15 offline tests, ~15 s
+pytest -q                          # offline tests, a few seconds
+# macOS: XGBoost needs OpenMP -> brew install libomp
 ```
 
 ### Data
@@ -171,21 +181,21 @@ Key definitions (proposal §2.1), as implemented:
 ## 4. Open decisions (agree with the supervisor before the pilot)
 
 1. **Denial policy.** Neither dataset contains real decisions. τ is set so that
-   `decision.denial_rate` of the held-out split is denied, and this must be stated in the paper.
+   `decision.denial_rate` of the validation split is denied, and this must be stated in the paper.
 2. **`EXT_SOURCE_1/2/3` (Home Credit).** These opaque bureau scores dominate the model. For now
    they are kept as a non-actionable `external_scores` group. The alternatives are to drop them
    or to discuss them as a limitation.
 3. **Protected attributes.** `personal_status_sex`, `foreign_worker` and `CODE_GENDER` are
-   dropped from the models. Age stays in, as an immutable group. The pilot plan instead excludes
-   age, family status and children, so that any LLM mention is an unambiguous E1. Decide which.
+   dropped from the models. For Home Credit, age, family status, children and family size are
+   also excluded (pilot plan), so that any LLM mention is an unambiguous E1. Decided 15 Oct 2026.
 4. **ε and k.** `min_effect` is a placeholder. Fix it on a development split and report
    sensitivity to ε and k.
 5. **Attribution scale.** TreeSHAP values given to generators are in log-odds, while Δg is in
    probability. This mismatch is a possible error source to analyse (§5.1).
 6. **Gate thresholds.** The values in `pilot.py` (Gate #1 ≥ 10%, Gate #2 ≥ 30%, Gate #3-a ≥ 99%,
    Gate #3-b ≥ 95%) are illustrative.
-   The 30% for Gate #2 is the team's proposal. Write all three into `pilot/PREREGISTRATION.md` and
-   commit it on 19 Oct, before seeing results.
+   The 30% for Gate #2 is the team's proposal. All three are written into `pilot/PREREGISTRATION.md`, which
+   must be committed before any result exists.
 7. **FAX re-implementation.** Re-read the full FAX text before building B4 (check the authors'
    GitHub first). Its backbone is Qwen3-32B, so using it as the large open-weight generator makes
    the comparison fair. All positioning-table entries marked "n/r" must be checked against full texts.
