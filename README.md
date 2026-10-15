@@ -22,17 +22,17 @@ Train model → Select denied → Generate → Extract claims → Verify → (Re
 > *Implemented and tested:*
 > - data, models and τ
 > - intervention verifier (4 references)
-> - LR analytic check (Gate #3-a, marginal sampler)
+> - LR analytic check (Gates #3-a marginal and #3-b kNN)
 > - generator prompts P1–P3 (`raw`, `shap`, `shap_groups`) and backends
 > - keyword and LLM claim extractors
 > - E1–E5 rules (E6 only for immutable groups)
 > - SHAP-sign baseline (B2)
 > - template baseline (B1)
-> - pilot gate report (Gates #1 and #3)
+> - pilot gate report (Gates #1 with bootstrap CI, #3-a, #3-b; Gate #2 threshold set, value pending B4)
 >
 > *Not yet implemented:*
 > - FAX-style baseline (B4, Gate #2)
-> - Gate #3-b (kNN sampler against the LR reference) and the ε/k sensitivity grid
+> - the ε/k sensitivity grid
 > - LLM-judge baseline (B3)
 > - selective repair and baselines B5/B6
 > - the E6 flip test
@@ -40,13 +40,15 @@ Train model → Select denied → Generate → Extract claims → Verify → (Re
 > - semi-synthetic validation
 >
 > *Differences from the Weeks 1–2 pilot plan (to settle before 19 Oct):*
-> - Home Credit schema uses `application_train.csv` only. The plan's payment-history and
->   outstanding-debt groups need `bureau.csv` and `installments_payments.csv` aggregates.
+> - Home Credit now has bureau and instalment aggregates (`payment_history` and
+>   `outstanding_debt` groups, `configs/home_credit.yaml`). It is tested on small fixtures only; the
+>   groups still need expert review and a run on the real files.
 > - Plan: 70/15/15 split, about 15% denials, seed 2026, kNN K = 50, temperature 0 with one sample
 >   per applicant. Configs: 80/20 split, 20% denials, seed 13, K = 100, temperature 0.7 with three samples.
 > - Plan excludes age, family status and children from the model. Configs keep age as an immutable group.
 > - `pilot/PREREGISTRATION.md` is a draft. Items marked "to confirm" must be agreed, then it is committed as final on 19 Oct.
-> - Gate #2 needs the proposed 30% threshold in `pilot.py`.
+> - There is no `pilot/config.yaml`: the pilot is configured by `configs/*.yaml` (`pilot.n_denied`,
+>   `decision`, `verifier`, `generation`). `pilot/` holds only the pre-registration and, later, the report.
 
 ---
 
@@ -70,8 +72,8 @@ pytest -q                          # 15 offline tests, ~15 s
 
 | Dataset | Role (proposal §5.1) | How to get it |
 |---|---|---|
-| Statlog German Credit | fast iteration, FAX comparability | downloaded automatically from UCI on first `prepare`, or place `german.data` in `data/raw/` |
-| Home Credit Default Risk | primary | needs a Kaggle account and accepting the competition rules: `kaggle competitions download -c home-credit-default-risk -f application_train.csv -p data/raw/home-credit` |
+| Statlog German Credit (UCI, id 144) | fast iteration, FAX comparability | downloaded automatically from UCI on first `prepare`, or place `german.data` in `data/raw/`. Do **not** use the Kaggle `uciml/german-credit` copy: it is a reduced re-encoding with different columns |
+| Home Credit Default Risk | primary | needs a Kaggle account and accepting the competition rules (the API returns 403 until you do). Pilot files: `application_train.csv`, `bureau.csv`, `installments_payments.csv`; also keep `HomeCredit_columns_description.csv` to check column meanings. `kaggle competitions download -c home-credit-default-risk -p data/raw/home-credit`, then unzip there |
 | Lending Club / Freddie Mac, HELOC | replication | not wired yet; check licence and registration terms first |
 
 `data/raw/` and `runs/` are git-ignored. Never commit datasets, API keys or LLM outputs.
@@ -133,7 +135,7 @@ python -m verireason shap-sign    --config configs/german.yaml --model xgb   # b
 ```
 verireason/
   data/schema.py          feature schema, derived features h, reason groups G (validated)
-  data/{german,home_credit}.py  loaders (+ synthetic German-format data for tests)
+  data/{german,home_credit}.py  loaders (Home Credit: bureau / instalment aggregates; synthetic German-format data for tests)
   models/scoring.py       f(x) on raw features; owns h and the encoder; TreeSHAP group attributions
   models/train.py         XGBoost (primary) + logistic regression (validation), τ, denied set
   verify/samplers.py      Q_g: knn (conditional), marginal, median, approved references
@@ -178,14 +180,17 @@ Key definitions (proposal §2.1), as implemented:
    sensitivity to ε and k.
 5. **Attribution scale.** TreeSHAP values given to generators are in log-odds, while Δg is in
    probability. This mismatch is a possible error source to analyse (§5.1).
-6. **Gate thresholds.** The values in `pilot.py` (Gate #1 ≥ 10%, Gate #3 ≥ 95%) are illustrative.
+6. **Gate thresholds.** The values in `pilot.py` (Gate #1 ≥ 10%, Gate #2 ≥ 30%, Gate #3-a ≥ 99%,
+   Gate #3-b ≥ 95%) are illustrative.
    The 30% for Gate #2 is the team's proposal. Write all three into `pilot/PREREGISTRATION.md` and
    commit it on 19 Oct, before seeing results.
 7. **FAX re-implementation.** Re-read the full FAX text before building B4 (check the authors'
    GitHub first). Its backbone is Qwen3-32B, so using it as the large open-weight generator makes
    the comparison fair. All positioning-table entries marked "n/r" must be checked against full texts.
-8. **Bureau aggregates.** Add `bureau.csv` / `installments_payments.csv` features (payment history,
-   utilisation groups) or keep the application-table-only schema for the pilot.
+8. **Bureau aggregates.** `configs/home_credit.yaml` uses them. `configs/home_credit_app_only.yaml`
+   is the fallback without the secondary tables. Check each aggregate against
+   `HomeCredit_columns_description.csv` and have the group table reviewed by someone with credit
+   knowledge. `previous_application.csv` (prior refusals, approval rate) is optional and unused.
 
 ## 5. Planning documents
 

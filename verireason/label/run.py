@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from collections import Counter, defaultdict
 
+import numpy as np
+
 from verireason.config import RunConfig
 from verireason.data.prepare import load_schema
 from verireason.extract.run import load_claims
@@ -17,7 +19,28 @@ ERROR_TYPES = ("E1", "E2", "E3", "E4", "E5", "E6")
 GATE1_TYPES = ("E2", "E3", "E4")      # direction, prominence, omission (proposal §5.7)
 
 
-def summarize(labels: list[ExplanationLabel]) -> dict:
+def _has_gate1_error(lab: ExplanationLabel) -> bool:
+    return bool(lab.omissions or any(cl.verdict in GATE1_TYPES for cl in lab.claim_labels))
+
+
+def gate1_bootstrap_ci(labs: list[ExplanationLabel], n_boot: int = 1000, seed: int = 0
+                       ) -> list[float]:
+    """95% percentile CI of the Gate #1 share, resampling applicants (not explanations)."""
+    per_app: dict[str, list[int]] = defaultdict(lambda: [0, 0])
+    for lab in labs:
+        per_app[lab.applicant_id][0] += _has_gate1_error(lab)
+        per_app[lab.applicant_id][1] += 1
+    counts = np.array(list(per_app.values()), dtype=float)
+    if len(counts) == 0:
+        return [float("nan"), float("nan")]
+    rng = np.random.default_rng(seed)
+    idx = rng.integers(0, len(counts), size=(n_boot, len(counts)))
+    shares = counts[idx, 0].sum(axis=1) / counts[idx, 1].sum(axis=1)
+    lo, hi = np.percentile(shares, [2.5, 97.5])
+    return [float(lo), float(hi)]
+
+
+def summarize(labels: list[ExplanationLabel], seed: int = 0) -> dict:
     by_cond: dict[str, list[ExplanationLabel]] = defaultdict(list)
     for lab in labels:
         by_cond[f"{lab.generator}|{lab.setup}"].append(lab)
@@ -26,8 +49,7 @@ def summarize(labels: list[ExplanationLabel]) -> dict:
     for cond, labs in sorted(by_cond.items()):
         claim_counts = Counter(cl.verdict for lab in labs for cl in lab.claim_labels)
         n_claims = sum(claim_counts.values())
-        gate1 = [lab for lab in labs
-                 if lab.omissions or any(cl.verdict in GATE1_TYPES for cl in lab.claim_labels)]
+        gate1 = [lab for lab in labs if _has_gate1_error(lab)]
         out[cond] = {
             "n_explanations": len(labs),
             "n_claims": n_claims,
@@ -36,6 +58,7 @@ def summarize(labels: list[ExplanationLabel]) -> dict:
             "omission_rate_per_explanation": sum(len(lab.omissions) for lab in labs) / len(labs),
             "share_with_any_error": sum(lab.has_error for lab in labs) / len(labs),
             "share_with_direction_prominence_or_omission_error": len(gate1) / len(labs),
+            "gate1_ci95": gate1_bootstrap_ci(labs, seed=seed),
         }
     return out
 
@@ -54,6 +77,6 @@ def run(cfg: RunConfig, model_name: str, sampler: str | None = None,
         labels.append(label_explanation(exp, claims.get(exp.explanation_id, []), v, schema))
     tag = tag or sampler
     write_jsonl(cfg.run_dir / "labels" / f"{model_name}__{tag}.jsonl", labels)
-    summary = summarize(labels)
+    summary = summarize(labels, seed=cfg.seed)
     write_json(cfg.run_dir / "labels" / f"{model_name}__{tag}__summary.json", summary)
     return summary

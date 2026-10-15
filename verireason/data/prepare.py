@@ -24,7 +24,11 @@ def load_dataset(cfg: RunConfig, synthetic: bool = False) -> pd.DataFrame:
     if ds["name"] == "german":
         return german.load(cfg.resolve(ds["path"]), url=ds.get("url"))
     if ds["name"] == "home_credit":
-        return home_credit.load(cfg.resolve(ds["path"]), max_rows=ds.get("max_rows"), seed=cfg.seed)
+        def opt(key):
+            return cfg.resolve(ds[key]) if ds.get(key) else None
+        return home_credit.load(cfg.resolve(ds["path"]), max_rows=ds.get("max_rows"), seed=cfg.seed,
+                                bureau_path=opt("bureau_path"),
+                                installments_path=opt("installments_path"))
     raise ValueError(f"unknown dataset {ds['name']!r}")
 
 

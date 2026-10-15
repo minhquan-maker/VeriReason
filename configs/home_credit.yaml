@@ -1,6 +1,6 @@
 # Primary dataset (proposal §5.1). Requires a Kaggle account and accepting the competition rules:
-#   kaggle competitions download -c home-credit-default-risk -f application_train.csv -p data/raw/home-credit
-# The schema is a DRAFT — see configs/schemas/home_credit.yaml.
+#   kaggle competitions download -c home-credit-default-risk -p data/raw/home-credit   (then unzip there)
+# The schema is a DRAFT — see configs/schemas/home_credit.yaml. Application-only variant: home_credit_app_only.yaml.
 
 run_name: home_credit_pilot
 seed: 13
@@ -8,6 +8,8 @@ seed: 13
 dataset:
   name: home_credit
   path: data/raw/home-credit/application_train.csv
+  bureau_path: data/raw/home-credit/bureau.csv
+  installments_path: data/raw/home-credit/installments_payments.csv
   test_size: 0.2
   max_rows: null           # set e.g. 60000 to subsample while iterating
 

@@ -15,7 +15,7 @@ suggestion.
 
 | Branch | Stage | Scope (modules) | Proposal | Weeks | Suggested owner |
 |---|---|---|---|---|---|
-| `data/home-credit-reason-groups` | data | `data/home_credit.py`, `configs/schemas/home_credit.yaml`: finalise reason groups, EXT_SOURCE decision, Kaggle setup | §5.1 | 1 | Quan |
+| `data/home-credit-reason-groups` | data | `data/home_credit.py`, `configs/schemas/home_credit.yaml` (+ `_app_only` variant): finalise reason groups, EXT_SOURCE decision, Kaggle setup | §5.1 | 1 | Quan |
 | `generate/llm-narrators` | Generate | `generate/`, `llm/`: real backends, prompt freeze, cost / latency logging, ≥ 2 open-weight models + 1 proprietary | §5.2 | 1–2 | My |
 | `baseline/fax-gap-test` | baseline | `baselines/fax.py`: FAX-style verify-and-filter (B4) → **Gate #2** | §5.3, §5.7 | 1–2 | My |
 | `exp/pilot-go-no-go` | experiment | pilot configs and runs on about 200 denied Home Credit applicants; gate report for the go/no-go meeting | §5.7 | 1–2 | both |

@@ -24,3 +24,18 @@ def test_cli_stages_end_to_end(trained, capsys):
     assert main(["prepare", "--config", str(trained.path), "--synthetic",
                  "--runs-dir", str(trained.runs_dir / "cli")]) == 0
     assert '"n_reference"' in capsys.readouterr().out
+
+
+def test_gate1_bootstrap_ci():
+    from verireason.label.run import gate1_bootstrap_ci
+    from verireason.records import ExplanationLabel
+
+    def lab(app, bad):      # an omission (E4) counts towards Gate #1
+        return ExplanationLabel(explanation_id=f"{app}-{bad}", applicant_id=app, generator="g",
+                                setup="raw", claim_labels=[], omissions=["g"] if bad else [],
+                                n_errors=int(bad))
+
+    labs = [lab(f"a{i}", i < 20) for i in range(100)]          # true share 0.20
+    lo, hi = gate1_bootstrap_ci(labs, n_boot=500, seed=1)
+    assert lo < 0.20 < hi and 0.10 < lo and hi < 0.32
+    assert gate1_bootstrap_ci(labs, n_boot=500, seed=1) == [lo, hi]   # reproducible
