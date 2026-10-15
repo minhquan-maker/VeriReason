@@ -45,7 +45,7 @@ Train model → Select denied → Generate → Extract claims → Verify → (Re
 > - Plan: 70/15/15 split, about 15% denials, seed 2026, kNN K = 50, temperature 0 with one sample
 >   per applicant. Configs: 80/20 split, 20% denials, seed 13, K = 100, temperature 0.7 with three samples.
 > - Plan excludes age, family status and children from the model. Configs keep age as an immutable group.
-> - `pilot/PREREGISTRATION.md` (thresholds committed before results) does not exist yet.
+> - `pilot/PREREGISTRATION.md` is a draft. Items marked "to confirm" must be agreed, then it is committed as final on 19 Oct.
 > - Gate #2 needs the proposed 30% threshold in `pilot.py`.
 
 ---

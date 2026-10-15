@@ -48,7 +48,7 @@ FAX-style baseline B4.
 
 - [x] Scaffold: data → model → verify → generate → extract → label, with offline tests
 - [x] Gate #3-a check implemented (`validate-lr`, marginal sampler)
-- [ ] **Mon 19 Oct:** write `pilot/PREREGISTRATION.md` (G1–G3, ε, k, references, sensitivity grid) and commit it before any result exists
+- [ ] **Mon 19 Oct:** finalise `pilot/PREREGISTRATION.md` (draft exists; resolve the "to confirm" items) (G1–G3, ε, k, references, sensitivity grid) and commit it before any result exists
 - [ ] Home Credit: download, finalise reason groups with expert review, decide on EXT_SOURCE — `data/home-credit-reason-groups` (A, Tue 20 Oct)
 - [ ] Train XGBoost and LR, fix τ and denial rate (A, Wed 21 Oct)
 - [ ] TreeSHAP and group SHAP; select about 200 denied applicants (A, Thu 22 Oct) — `exp/pilot-go-no-go`
