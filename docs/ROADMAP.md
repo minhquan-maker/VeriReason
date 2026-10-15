@@ -28,6 +28,13 @@ advance; every reported number tied to a commit hash and seed.
 - [x] Private repo, CI, environment (`pip install -e ".[dev]"`)
 - [ ] Experiment tracker (MLflow or W&B), API keys, GPU host for open-weight LLMs, token budget estimate
 - [ ] Roles and meeting schedule agreed (above)
+- [ ] Email the supervisor to schedule the meeting, attaching the slides and the timeline
+- [ ] Look up the FinNLP deadline and the ARR cycle; add both to the team calendar
+- [ ] Revise the slides according to the five corrections below
+- [ ] Kaggle account, accept the Home Credit rules, download the data
+- [x] German Credit (UCI id 144) downloaded; real run of prepare, train, verify, validate-lr works
+- [ ] Submit the FICO HELOC access request and register for Freddie Mac, so both are available if needed
+- [ ] Call one open-weight model and one API model from a script
 
 Done when: related-work table has a source for every cell; Home Credit and German Credit are
 downloaded; one open-weight and one proprietary LLM can be called from a script; the venue
@@ -40,6 +47,21 @@ presentation:
 - Siegel et al.: current version covers 75 models from 13 families.
 - AlMarri: two papers (2510.25701, 2512.00163); cite the one used.
 - Cite Regulation B as the basis. CFPB Circular 2022-03 was withdrawn on 12 May 2025.
+
+## Schedule risks and fallback scope
+
+| Risk | Early signal | Response |
+|---|---|---|
+| Pilot partly fails | A gate condition is not met | Apply the decision matrix below. Fallback: focus on contributions 1 and 4 (taxonomy, benchmark, empirical study) |
+| Delay in Weeks 3–5 | Low extractor F1; verifier does not match LR | Simplify the schema; keep only the kNN sampler; postpone the generative sampler |
+| LLM cost over budget | Pilot token count exceeds the estimate | Fewer samples per applicant; prefer open-weight models; cache all outputs |
+| No expert annotators | None confirmed by end of Week 5 | Ask the supervisor in Week 0. Fallback: finance students with a written guide |
+| Deadline at risk | No end-to-end run by Week 8 | Drop Lending Club, Freddie Mac, random forest and E6; keep Home Credit and German Credit with XGBoost and LR |
+| New competing paper | Weekly arXiv check (cs.CL, cs.LG, q-fin.RM) | Update the positioning table and sharpen the stated differences |
+
+Dataset priority: Home Credit, then German Credit, then HELOC or Lending Club, then Freddie Mac.
+The timeline adds German Credit formally in Weeks 3–5; here it is also used earlier as a fast
+sanity check for the code.
 
 ## Weeks 1–2 (19 Oct – 1 Nov): pilot and go/no-go gate
 

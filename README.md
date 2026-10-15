@@ -74,7 +74,9 @@ pytest -q                          # 15 offline tests, ~15 s
 |---|---|---|
 | Statlog German Credit (UCI, id 144) | fast iteration, FAX comparability | downloaded automatically from UCI on first `prepare`, or place `german.data` in `data/raw/`. Do **not** use the Kaggle `uciml/german-credit` copy: it is a reduced re-encoding with different columns |
 | Home Credit Default Risk | primary | needs a Kaggle account and accepting the competition rules (the API returns 403 until you do). Pilot files: `application_train.csv`, `bureau.csv`, `installments_payments.csv`; also keep `HomeCredit_columns_description.csv` to check column meanings. `kaggle competitions download -c home-credit-default-risk -p data/raw/home-credit`, then unzip there |
-| Lending Club / Freddie Mac, HELOC | replication | not wired yet; check licence and registration terms first |
+| FICO HELOC (Explainable ML Challenge) | replication (optional) | request access through the FICO form and accept its licence; copies on Kaggle and OpenML exist, but use the FICO source. Special negative codes (−7, −8, −9) need handling. Not wired yet |
+| Lending Club (2007–2018) | secondary replication | no longer published by Lending Club; the Kaggle copy (`wordsforthewise/lending-club`) is user-uploaded, so check its licence. Post-origination columns leak the outcome and must be removed. Not wired yet |
+| Freddie Mac Single-Family Loan-Level | secondary replication, if time allows | register at Clarity Data Intelligence. Free for academic use; redistribution of the data or derived products that could recreate it is not allowed. Not wired yet |
 
 `data/raw/` and `runs/` are git-ignored. Never commit datasets, API keys or LLM outputs.
 
