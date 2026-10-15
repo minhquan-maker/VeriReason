@@ -20,3 +20,6 @@ runs/*
 .DS_Store
 .idea/
 .vscode/
+
+# Downloaded papers (scripts/fetch_papers.sh)
+papers/
