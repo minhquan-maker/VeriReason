@@ -64,7 +64,7 @@ Each claim receives one label, precedence E1 → E2 → E3.
 |---|---|---|
 | G1 | share of explanations with ≥ 1 E2, E3 or E4 error, pooled over LLM × prompt | ≥ 10% **[to confirm]** |
 | G2 | Gap = (errors in L still present after B4 + new E4 created by B4) / \|L\|, where L is the set of errors the verifier finds in the original explanations | ≥ 30% **[to confirm; the team's proposal, not from the slides]** |
-| G3-a | sign agreement with the analytic LR reference, marginal sampler, logit-space Δ, no cross-group derived features, excluding pairs where the reference is near zero | close to 100%. Any mismatch is a bug |
+| G3-a | sign agreement with the analytic LR reference, marginal sampler, logit-space Δ, no cross-group derived features, excluding pairs where the reference is near zero | ≥ 99% **[to confirm]** ("close to 100%"). Anything lower is a bug, not a finding |
 | G3-b | same agreement, conditional kNN sampler, probability-space Δ | ≥ 95% **[to confirm]** |
 
 Reporting: pooled and per LLM × prompt; 95% bootstrap CI (1,000 resamples over applicants);

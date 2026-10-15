@@ -22,17 +22,17 @@ Train model → Select denied → Generate → Extract claims → Verify → (Re
 > *Implemented and tested:*
 > - data, models and τ
 > - intervention verifier (4 references)
-> - LR analytic check (Gate #3-a, marginal sampler)
+> - LR analytic check (Gates #3-a marginal and #3-b kNN)
 > - generator prompts P1–P3 (`raw`, `shap`, `shap_groups`) and backends
 > - keyword and LLM claim extractors
 > - E1–E5 rules (E6 only for immutable groups)
 > - SHAP-sign baseline (B2)
 > - template baseline (B1)
-> - pilot gate report (Gates #1 and #3)
+> - pilot gate report (Gates #1 with bootstrap CI, #3-a, #3-b; Gate #2 threshold set, value pending B4)
 >
 > *Not yet implemented:*
 > - FAX-style baseline (B4, Gate #2)
-> - Gate #3-b (kNN sampler against the LR reference) and the ε/k sensitivity grid
+> - the ε/k sensitivity grid
 > - LLM-judge baseline (B3)
 > - selective repair and baselines B5/B6
 > - the E6 flip test
@@ -47,7 +47,8 @@ Train model → Select denied → Generate → Extract claims → Verify → (Re
 >   per applicant. Configs: 80/20 split, 20% denials, seed 13, K = 100, temperature 0.7 with three samples.
 > - Plan excludes age, family status and children from the model. Configs keep age as an immutable group.
 > - `pilot/PREREGISTRATION.md` is a draft. Items marked "to confirm" must be agreed, then it is committed as final on 19 Oct.
-> - Gate #2 needs the proposed 30% threshold in `pilot.py`.
+> - There is no `pilot/config.yaml`: the pilot is configured by `configs/*.yaml` (`pilot.n_denied`,
+>   `decision`, `verifier`, `generation`). `pilot/` holds only the pre-registration and, later, the report.
 
 ---
 
@@ -179,7 +180,8 @@ Key definitions (proposal §2.1), as implemented:
    sensitivity to ε and k.
 5. **Attribution scale.** TreeSHAP values given to generators are in log-odds, while Δg is in
    probability. This mismatch is a possible error source to analyse (§5.1).
-6. **Gate thresholds.** The values in `pilot.py` (Gate #1 ≥ 10%, Gate #3 ≥ 95%) are illustrative.
+6. **Gate thresholds.** The values in `pilot.py` (Gate #1 ≥ 10%, Gate #2 ≥ 30%, Gate #3-a ≥ 99%,
+   Gate #3-b ≥ 95%) are illustrative.
    The 30% for Gate #2 is the team's proposal. Write all three into `pilot/PREREGISTRATION.md` and
    commit it on 19 Oct, before seeing results.
 7. **FAX re-implementation.** Re-read the full FAX text before building B4 (check the authors'

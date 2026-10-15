@@ -47,7 +47,8 @@ Setting: about 200 denied Home Credit applicants, 3 LLMs × 3 prompts, the minim
 FAX-style baseline B4.
 
 - [x] Scaffold: data → model → verify → generate → extract → label, with offline tests
-- [x] Gate #3-a check implemented (`validate-lr`, marginal sampler)
+- [x] Gates #3-a and #3-b implemented (`validate-lr`, `pilot.py`); Gate #1 reports a 95% bootstrap CI over applicants
+- [x] Real German Credit run (prepare, train, verify, validate-lr): G3-a 99.9%, G3-b 98.0% (code check, not a pilot result)
 - [ ] **Mon 19 Oct:** finalise `pilot/PREREGISTRATION.md` (draft exists; resolve the "to confirm" items) (G1–G3, ε, k, references, sensitivity grid) and commit it before any result exists
 - [x] Home Credit loader with bureau and instalment aggregates, groups `payment_history` and `outstanding_debt` (draft, fixture tests only) — `data/home-credit-reason-groups`
 - [ ] Home Credit: download the three files, check aggregates against the column description, finalise reason groups with expert review, decide on EXT_SOURCE and on excluding age / family status / children — `data/home-credit-reason-groups` (A, Tue 20 Oct)
@@ -70,9 +71,9 @@ Gates (proposal §5.7; thresholds are illustrative and must be fixed before seei
 | Gate | Question | Implemented by | Pass condition |
 |---|---|---|---|
 | #1 | Problem exists | `label` | ≥ 10% of explanations contain ≥ 1 E2/E3/E4 error. E5 is reported separately, not counted |
-| #2 | Gap left by FAX | `baselines/fax.py` (TODO) | B4 leaves ≥ 30% of the verifier's errors undetected or unrepaired. 30% is the team's proposal, not from the slides. Gap = (errors still present + new E4 after B4) / \|L\| |
-| #3-a | Implementation correct | `validate-lr` | Marginal sampler, logit-space Δ, no cross-group derived features: sign agreement close to 100%. A mismatch is a bug |
-| #3-b | Slide criterion | `validate-lr` (TODO) | Conditional kNN sampler, probability-space Δ: sign agreement ≥ 95%. Disagreement in correlated groups is evidence, not failure |
+| #2 | Gap left by FAX | `baselines/fax.py` (TODO; threshold already in `pilot.py`) | B4 leaves ≥ 30% of the verifier's errors undetected or unrepaired. 30% is the team's proposal, not from the slides. Gap = (errors still present + new E4 after B4) / \|L\| |
+| #3-a | Implementation correct | `validate-lr` | Marginal sampler, logit-space Δ, no cross-group derived features: sign agreement ≥ 99% ("close to 100%"). A mismatch is a bug |
+| #3-b | Slide criterion | `validate-lr` | Conditional kNN sampler, probability-space Δ: sign agreement ≥ 95%. Disagreement in correlated groups is evidence, not failure |
 
 Required sensitivity: ε ∈ {0.002, 0.005, 0.01}; k ∈ {2, 4}; two references (kNN and marginal);
 SHAP-sign comparison. A pass is reliable only if it holds in most configurations.
