@@ -1,7 +1,8 @@
 # Slide corrections (VeriReason Proposed Slide, 29 slides)
 
-The slide deck is a LaTeX Beamer PDF and its `.tex` source is not in this repository, so the slides
-are not edited here. Below is the exact replacement text per slide. Sources: *Project Timeline*
+**Update (15 Oct 2026):** the original `.tex` could not be found, so the deck was rebuilt as
+`slides/VeriReason_Proposed_Slide.tex` (PDF next to it) with all corrections below applied. The
+list below is kept as the change log. Original wording and replacement text per slide: Sources: *Project Timeline*
 section 1.1 (five corrections) and sections 2, 5 and 6 (dates, datasets, risks), and the Weeks 1–2
 pilot plan (gates). Paste into the `.tex` and recompile.
 
