@@ -8,8 +8,9 @@ TODO (weeks 1-2, branch `baseline/fax-gap-test`) — re-read the FAX paper in fu
      plus FAX's own decomposition prompt as an ablation).
   2. Cross-check each claim with FAX's "inherently faithful tools" — for tabular data this is
      the model's own attributions/predictions exposed as tools; mirror exactly what FAX exposes.
-  3. Filter unsupported / contradictory claims, then regenerate the final explanation from the
-     surviving claims (FAX filters; it does not repair).
+  3. Remove or rewrite refuted claims; drop inconclusive ones or state them with uncertainty
+     (FAX has no preservation constraint and no notion of principal reasons, so E3/E4 are not
+     detected by design and removal can create a new E4).
   4. Output: flagged claims (for detection P/R/F1 vs. our labels) and the final text (for
      residual error rate after re-labelling with our verifier).
 """
