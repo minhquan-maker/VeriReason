@@ -15,28 +15,38 @@ Train model → Select denied → Generate → Extract claims → Verify → (Re
    train         train         generate     extract         verify     repair      label
 ```
 
-> **Status: pilot scaffold.**
+> **Status: pilot scaffold (Week 0 of the 13-week plan, 10 Oct 2026 – 17 Jan 2027).**
+> Pilot weeks 1–2 run 19 Oct – 1 Nov; go/no-go meeting proposed Mon 2 Nov 2026.
+> See [docs/ROADMAP.md](docs/ROADMAP.md) for the dated plan, gates and decision matrix.
 >
 > *Implemented and tested:*
 > - data, models and τ
 > - intervention verifier (4 references)
-> - LR analytic check (Gate #3)
-> - generator prompts and backends
+> - LR analytic check (Gate #3-a, marginal sampler)
+> - generator prompts P1–P3 (`raw`, `shap`, `shap_groups`) and backends
 > - keyword and LLM claim extractors
 > - E1–E5 rules (E6 only for immutable groups)
 > - SHAP-sign baseline (B2)
 > - template baseline (B1)
-> - pilot gate report
+> - pilot gate report (Gates #1 and #3)
 >
 > *Not yet implemented:*
 > - FAX-style baseline (B4, Gate #2)
+> - Gate #3-b (kNN sampler against the LR reference) and the ε/k sensitivity grid
 > - LLM-judge baseline (B3)
 > - selective repair and baselines B5/B6
 > - the E6 flip test
 > - consistency check
 > - semi-synthetic validation
 >
-> See [docs/ROADMAP.md](docs/ROADMAP.md).
+> *Differences from the Weeks 1–2 pilot plan (to settle before 19 Oct):*
+> - Home Credit schema uses `application_train.csv` only. The plan's payment-history and
+>   outstanding-debt groups need `bureau.csv` and `installments_payments.csv` aggregates.
+> - Plan: 70/15/15 split, about 15% denials, seed 2026, kNN K = 50, temperature 0 with one sample
+>   per applicant. Configs: 80/20 split, 20% denials, seed 13, K = 100, temperature 0.7 with three samples.
+> - Plan excludes age, family status and children from the model. Configs keep age as an immutable group.
+> - `pilot/PREREGISTRATION.md` (thresholds committed before results) does not exist yet.
+> - Gate #2 needs the proposed 30% threshold in `pilot.py`.
 
 ---
 
@@ -132,7 +142,7 @@ verireason/
   generate/prompts.py     3 prompt setups: raw | shap | shap_groups
   extract/extractor.py    typed claims (g, δ, μ, action, span): keyword + LLM extractors
   label/rules.py          taxonomy E1–E6 as deterministic rules
-  baselines/              B1 template, B2 SHAP-sign, B4 FAX-style (stub)
+  baselines/              B1 template, B2 SHAP-sign, B4 FAX-style (stub; FAX removes or rewrites refuted claims)
   repair/selective.py     selective repair (fact sheet + preservation check; loop TODO)
   pilot.py                go/no-go gate report
 configs/                  experiment configs + schemas/ (reason-group definitions)
@@ -162,16 +172,27 @@ Key definitions (proposal §2.1), as implemented:
    they are kept as a non-actionable `external_scores` group. The alternatives are to drop them
    or to discuss them as a limitation.
 3. **Protected attributes.** `personal_status_sex`, `foreign_worker` and `CODE_GENDER` are
-   dropped from the models. Age stays in, as an immutable group.
+   dropped from the models. Age stays in, as an immutable group. The pilot plan instead excludes
+   age, family status and children, so that any LLM mention is an unambiguous E1. Decide which.
 4. **ε and k.** `min_effect` is a placeholder. Fix it on a development split and report
    sensitivity to ε and k.
 5. **Attribution scale.** TreeSHAP values given to generators are in log-odds, while Δg is in
    probability. This mismatch is a possible error source to analyse (§5.1).
 6. **Gate thresholds.** The values in `pilot.py` (Gate #1 ≥ 10%, Gate #3 ≥ 95%) are illustrative.
-7. **FAX re-implementation.** Re-read the full FAX text before building B4. All
-   positioning-table entries marked "n/r" must be checked against full texts.
+   The 30% for Gate #2 is the team's proposal. Write all three into `pilot/PREREGISTRATION.md` and
+   commit it on 19 Oct, before seeing results.
+7. **FAX re-implementation.** Re-read the full FAX text before building B4 (check the authors'
+   GitHub first). Its backbone is Qwen3-32B, so using it as the large open-weight generator makes
+   the comparison fair. All positioning-table entries marked "n/r" must be checked against full texts.
+8. **Bureau aggregates.** Add `bureau.csv` / `installments_payments.csv` features (payment history,
+   utilisation groups) or keep the application-table-only schema for the pilot.
 
-## 5. Contributing
+## 5. Planning documents
+
+The project timeline and the Weeks 1–2 pilot plan are the source of the dates, gates and branch
+plan. [docs/ROADMAP.md](docs/ROADMAP.md) mirrors them as a checklist.
+
+## 6. Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the branch layout, conventions and the check that must
 pass before every PR.
