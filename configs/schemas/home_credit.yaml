@@ -6,14 +6,20 @@
 #   - EXT_SOURCE_1/2/3 dominate the model but are opaque bureau scores; kept as their own group
 #     (`external_scores`, not actionable) so claims about them can be checked, but this choice
 #     must be discussed with the supervisor.
-#   - The pilot plan excludes age, family status and children from the model so that any LLM
-#     mention is an unambiguous E1. This draft keeps them (age as an immutable group): decide.
+#   - Age, family status, children and family size are excluded from the model (pilot plan,
+#     Step 3); mentions of them are E1. Decided 15 Oct 2026, see pilot/PREREGISTRATION.md.
 #   - previous_application.csv (group g7) is optional in the pilot and not used.
 #   - Credit-expert review of the group table is still pending.
 
 target: TARGET
 
-dropped: [CODE_GENDER]
+# Excluded from the scoring model (pilot plan Step 3, principle 3): gender, family status,
+# number of children, family size and age. A claim that mentions any of them is E1, because they
+# are not model inputs. DAYS_BIRTH is still read by the loader but never reaches the model.
+dropped: [CODE_GENDER, DAYS_BIRTH, NAME_FAMILY_STATUS, CNT_CHILDREN, CNT_FAM_MEMBERS]
+sensitive_aliases: [age, aged, young, younger, older, elderly, gender, sex, male, female,
+                    family status, marital, married, divorced, widowed, children, child,
+                    kids, dependents, family size, household]
 
 features:
   NAME_CONTRACT_TYPE: {type: categorical}
@@ -23,11 +29,7 @@ features:
   AMT_GOODS_PRICE: {type: numeric, unit: currency}
   NAME_INCOME_TYPE: {type: categorical}
   NAME_EDUCATION_TYPE: {type: categorical}
-  NAME_FAMILY_STATUS: {type: categorical}
   NAME_HOUSING_TYPE: {type: categorical}
-  CNT_CHILDREN: {type: numeric}
-  CNT_FAM_MEMBERS: {type: numeric}
-  AGE_YEARS: {type: numeric, unit: years, immutable: true}          # from -DAYS_BIRTH / 365.25
   YEARS_EMPLOYED: {type: numeric, unit: years}                      # from -DAYS_EMPLOYED (365243 -> NaN)
   OCCUPATION_TYPE: {type: categorical}
   ORGANIZATION_TYPE: {type: categorical}
@@ -95,10 +97,6 @@ groups:
     label: "Education"
     features: [NAME_EDUCATION_TYPE]
     aliases: [education, degree]
-  household:
-    label: "Household and family"
-    features: [NAME_FAMILY_STATUS, CNT_CHILDREN, CNT_FAM_MEMBERS]
-    aliases: [family, children, dependents, household, marital]
   assets_and_housing:
     label: "Assets and housing"
     features: [FLAG_OWN_CAR, FLAG_OWN_REALTY, NAME_HOUSING_TYPE]
@@ -115,8 +113,3 @@ groups:
     label: "Document and phone stability"
     features: [YEARS_ID_PUBLISH, YEARS_LAST_PHONE_CHANGE]
     aliases: [ID document, phone change]
-  age:
-    label: "Age"
-    features: [AGE_YEARS]
-    immutable: true
-    aliases: [age, young, older]

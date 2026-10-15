@@ -31,7 +31,7 @@ advance; every reported number tied to a commit hash and seed.
 - [ ] Email the supervisor to schedule the meeting, attaching the slides and the timeline
 - [ ] Look up the FinNLP deadline and the ARR cycle; add both to the team calendar
 - [ ] Revise the slides according to the five corrections below
-- [ ] Kaggle account, accept the Home Credit rules, download the data
+- [x] Kaggle account, accept the Home Credit rules, download the data (files in `data/raw/home-credit/`, 15 Oct)
 - [x] German Credit (UCI id 144) downloaded; real run of prepare, train, verify, validate-lr works
 - [ ] Submit the FICO HELOC access request and register for Freddie Mac, so both are available if needed
 - [ ] Call one open-weight model and one API model from a script
@@ -71,7 +71,7 @@ FAX-style baseline B4.
 - [x] Scaffold: data → model → verify → generate → extract → label, with offline tests
 - [x] Gates #3-a and #3-b implemented (`validate-lr`, `pilot.py`); Gate #1 reports a 95% bootstrap CI over applicants
 - [x] Real German Credit run (prepare, train, verify, validate-lr): G3-a 99.9%, G3-b 98.0% (code check, not a pilot result)
-- [ ] **Mon 19 Oct:** finalise `pilot/PREREGISTRATION.md` (draft exists; resolve the "to confirm" items) (G1–G3, ε, k, references, sensitivity grid) and commit it before any result exists
+- [x] `pilot/PREREGISTRATION.md` finalised and committed 15 Oct (config aligned with the plan). Still to fill by dated amendment: model ids, hard-case rule, reviewer, B4 tool set, supervisor confirmation (§9 of that file)
 - [x] Home Credit loader with bureau and instalment aggregates, groups `payment_history` and `outstanding_debt` (draft, fixture tests only) — `data/home-credit-reason-groups`
 - [ ] Home Credit: download the three files, check aggregates against the column description, finalise reason groups with expert review, decide on EXT_SOURCE and on excluding age / family status / children — `data/home-credit-reason-groups` (A, Tue 20 Oct)
 - [ ] Train XGBoost and LR, fix τ and denial rate (A, Wed 21 Oct)

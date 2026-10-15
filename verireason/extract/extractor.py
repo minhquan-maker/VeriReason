@@ -55,8 +55,12 @@ class KeywordExtractor:
         }
         dropped_terms = [d.replace("_", " ") for d in schema.dropped] + [
             "gender", "sex", "nationality", "foreign", "marital", "race", "religion"]
-        self.not_in_model = re.compile(r"\b(" + "|".join(map(re.escape, dropped_terms)) + r")",
-                                       re.I)
+        # schema aliases are whole words ("age" must not match "agency"); the terms above are stems
+        whole = [re.escape(a) for a in schema.sensitive_aliases]
+        pattern = r"\b(" + "|".join(map(re.escape, dropped_terms)) + r")"
+        if whole:
+            pattern += r"|\b(" + "|".join(whole) + r")\b"
+        self.not_in_model = re.compile(pattern, re.I)
 
     def extract(self, exp: Explanation) -> list[Claim]:
         claims: list[Claim] = []
